@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script
+            src="https://code.jquery.com/jquery-3.4.0.min.js"
+            integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg="
+            crossorigin="anonymous"></script>
+</head>
+<body>
+
+
+<script>
+    let arrayNumbers = [];
+
+    function getData() {
+        return new Promise((resolve, reject) => {
+
+            $.ajax({
+                type: 'POST',
+                url: 'https://api.random.org/json-rpc/2/invoke',
+                data: JSON.stringify({
+                    "jsonrpc": "2.0",
+                    "method": "generateIntegers",
+                    "params": {
+                        "apiKey": "83c395e0-55ed-4aae-b1ce-9806883f83e6",
+                        "n": 2,
+                        "min": 0,
+                        "max": 1,
+                        "replacement": true
+                    },
+                    "id": 1
+                }),
+                success: function (result) {
+                    resolve(result);
+                },
+                error: function (reason) {
+                    reject(reason);
+                },
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+            });
+
+
+        });
+    }
+
+    function getNumbers() {
+        return new Promise((resolve, reject) => {
+            let numbers;
+            for (let i = 1; i <= 10; i++) {
+                getData()
+                    .then(function (result) {
+                        arrayNumbers = arrayNumbers.concat(result.result.random.data);
+                        numbers = arrayNumbers.join('');
+                    })
+                    .finally(function (numbers) {
+                        console.log(numbers);
+                        resolve(numbers);
+
+                    })
+                    .catch(function (error) {
+                        reject(error);
+                    });
+            }
+        });
+    }
+
+    getNumbers().then(function (numbers) {
+        console.log(numbers);
+        const count = numbers.length;
+        let reg = [/0/ig, /1/ig,
+            /00/ig, /01/ig, /10/ig, /11/ig,
+            /000/ig, /001/ig, /010/ig, /100/ig, /111/ig, /110/ig, /101/ig, /011/ig
+        ];
+
+        reg.forEach(function (item) {
+            let numbersCount = numbers.match(item).length;
+            let persentage = numbersCount * 100 / count;
+            let title = item.toString().replace(/[^\d]/g, '');
+            console.log(title + ': ' + numbersCount + ' times');
+            console.log('%: ' + persentage.toFixed(2));
+        }, count);
+    })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+</script>
+</body>
+</html>
